@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<body style="background: #ccc; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;">
+  <div id="container" style="position: relative; width: 400px; height: 400px; border: 1px solid red;">
+    <img src="public/plastik-belakang.png" style="position: absolute; top: 0; left: 0; width: 100%; opacity: 0.8;" />
+    <img id="fg" src="public/plastik-depan.png" style="position: absolute; top: 0; left: 0; width: 72.4%; opacity: 0.8; mix-blend-mode: screen;" />
+  </div>
+  <div style="position: absolute; top: 10px; left: 10px; background: white; padding: 10px;">
+    <label>Top: <input type="range" min="0" max="100" value="0" oninput="document.getElementById('fg').style.top = this.value + '%'" /></label>
+    <label>Left: <input type="range" min="0" max="100" value="0" oninput="document.getElementById('fg').style.left = this.value + '%'" /></label>
+  </div>
+</body>
+</html>
