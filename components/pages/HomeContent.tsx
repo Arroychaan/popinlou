@@ -178,89 +178,59 @@ export default function HomeContent() {
       }
     });
     
-    // --- Dinding Poligonal yang Akurat (Mengikuti Kontur Plastik) ---
-    const createWallSegment = (x1: number, y1: number, x2: number, y2: number, isLeftWall: boolean) => {
-      const thickness = 100;
-      let cx = (x1 + x2) / 2;
-      let cy = (y1 + y2) / 2;
-      const length = Math.hypot(x2 - x1, y2 - y1);
-      const angle = Math.atan2(y2 - y1, x2 - x1);
-      
-      // Mencari vektor normal untuk menggeser hitbox ke "luar" garis visual
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      const len = Math.hypot(dx, dy);
-      const nx = -dy / len; // menunjuk ke kiri
-      const ny = dx / len;
-      
-      const shiftDir = isLeftWall ? 1 : -1;
-      cx += nx * (thickness / 2) * shiftDir;
-      cy += ny * (thickness / 2) * shiftDir;
+    // =====================================================================
+    // DINDING FISIKA — Pendekatan KONSERVATIF & SEDERHANA
+    // Prinsip: Lebih baik popcorn terkurung rapat di dalam, 
+    // daripada meluber keluar kantong. Gunakan koordinat yang 
+    // jauh lebih ke dalam dari tepi visual kantong.
+    //
+    // Canvas 400x900, top=-400px dari wrapper.
+    // Canvas Y = Wrapper Y + 400
+    // Bag visible area di wrapper: X[85..315], Y[50..430]
+    // Bag visible area di canvas : X[85..315], Y[450..830]
+    // Interior aman (dengan margin 20px): X[105..295], Y[500..800]
+    // =====================================================================
+    
+    const wallOpts = { isStatic: true, render: { visible: false }, friction: 0.9 };
+    
+    // Dinding kiri-kanan lurus, X konservatif jauh dari tepi visual
+    const leftWall   = Matter.Bodies.rectangle(60,  640, 100, 500, wallOpts);
+    const rightWall  = Matter.Bodies.rectangle(340, 640, 100, 500, wallOpts);
+    // Lantai di atas segel bawah kantong
+    const floor      = Matter.Bodies.rectangle(200, 815,  300, 30,  wallOpts);
+    // Plafon mencegah popcorn kabur ke atas
+    const ceiling    = Matter.Bodies.rectangle(200, 488,  300, 30,  wallOpts);
+    
+    Matter.World.add(engine.world, [leftWall, rightWall, floor, ceiling]);
 
-      return Matter.Bodies.rectangle(cx, cy, length + 20 /* overlap to prevent gaps */, thickness, {
-        isStatic: true,
-        angle: angle,
-        render: { visible: false },
-        friction: 0.8
-      });
-    };
+    // =====================================================================
+    // SPAWN POPCORN — Isi kantong dari atas ke bawah
+    // =====================================================================
+    const spawnLeft   = 110;
+    const spawnRight  = 290;
+    const spawnTop    = 500; // canvas Y, tepat bawah zipper (wrapper Y=100)
+    const spawnBottom = 800; // canvas Y, tepat atas segel bawah (wrapper Y=400)
 
-    // Menyusun kontur dari atas ke bawah:
-    // Bagian atas lurus -> Pinggang menyempit (pinch) -> Dasar melebar (flare)
-    
-    // Kiri: dari Y=430 (canvas) = Y=30 (wrapper, tepat bawah zipper) ke bawah
-    const lTop = createWallSegment(100, 430, 100, 580, true);
-    const lMid = createWallSegment(100, 580, 108, 690, true);
-    const lBot = createWallSegment(108, 690, 75, 830, true);
-    
-    // Kanan
-    const rTop = createWallSegment(300, 430, 300, 580, false);
-    const rMid = createWallSegment(300, 580, 292, 690, false);
-    const rBot = createWallSegment(292, 690, 325, 830, false);
-    
-    // Dasar
-    const bottomFloor = Matter.Bodies.rectangle(200, 880, 400, 100, { 
-      isStatic: true, render: { visible: false }, friction: 0.8 
-    });
-    
-    // Atap (mencegah popcorn keluar lewat atas canvas saat di-spawn)
-    const ceiling = Matter.Bodies.rectangle(200, 420, 400, 20, {
-      isStatic: true, render: { visible: false }
-    });
-    
-    Matter.World.add(engine.world, [lTop, lMid, lBot, rTop, rMid, rBot, bottomFloor, ceiling]);
-    
-    // --- Spawn popcorn di dalam kantong ---
-    // Canvas Y=400 => Wrapper Y=0. Bag interior dimulai dari canvas Y≈450 (wrapper Y≈50)
-    // Bag bottom di canvas Y≈830 (wrapper Y≈430)
-    const spawnTop    = 455;  // canvas Y, tepat di bawah zipper
-    const spawnBottom = 820;  // canvas Y, tepat di atas segel bawah
-    const spawnLeft   = 115;
-    const spawnRight  = 285;
-    
-    const cols = 8;
-    const rows = 14;  // lebih banyak baris agar memenuhi seluruh tinggi kantong
-    const maxPopcorn = cols * rows; // 112 popcorn
+    const cols = 7;
+    const rows = 12;
     const bodies: Matter.Body[] = [];
-    
     let count = 0;
-    for (let r_idx = 0; r_idx < rows && count < maxPopcorn; r_idx++) {
-      for (let c_idx = 0; c_idx < cols && count < maxPopcorn; c_idx++) {
-        const x_pct = (c_idx + 0.5) / cols;
-        const y_pct = (r_idx + 0.5) / rows;
+    
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        // Grid reguler + sedikit noise agar organik
+        const px = spawnLeft  + ((c + 0.5) / cols) * (spawnRight  - spawnLeft)  + (Math.random() - 0.5) * 10;
+        const py = spawnTop   + ((r + 0.5) / rows) * (spawnBottom - spawnTop)   + (Math.random() - 0.5) * 10;
         
-        const px = spawnLeft + x_pct * (spawnRight - spawnLeft) + (Math.random() - 0.5) * 8;
-        const py = spawnTop  + y_pct * (spawnBottom - spawnTop)  + (Math.random() - 0.5) * 8;
-        
-        // Ilusi 3D: sprite lebih besar dari hitbox agar terlihat tumpang-tindih
-        const visualR = 14 + Math.random() * 5; // sprite radius 14-19px
-        const physicsR = visualR * 0.72;         // hitbox 28% lebih kecil
+        // Sprite lebih besar dari hitbox → ilusi tumpang-tindih / kedalaman 3D
+        const visualR  = 13 + Math.random() * 5; // 13–18px
+        const physicsR = visualR * 0.65;          // hitbox 35% lebih kecil dari sprite
         const s = visualR / 1000;
         
         const body = Matter.Bodies.polygon(px, py, 7, physicsR, {
           restitution: 0.05,
-          friction: 0.9,
-          density: 0.002,
+          friction: 0.95,
+          density: 0.003,
           angle: Math.random() * Math.PI * 2,
           render: {
             sprite: {
