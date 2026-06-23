@@ -94,27 +94,30 @@ export default function HomeContent() {
     const engine = engineRef.current;
     if (!engine) return;
 
-    // Goyang popcorn di dalam (selalu goyang saat diklik agar terasa interaktif)
+    // Goyang popcorn di dalam
     insidePopcornsRef.current.forEach(body => {
       const f = 0.015 * body.mass;
       Matter.Body.applyForce(body, body.position, {
         x: (Math.random() - 0.5) * f,
-        y: -Math.random() * f * 2
+        y: -Math.random() * f * 1.5
       });
     });
     
-    // Hanya jatuhkan popcorn jika belum mencapai batas maksimum 4 kali
+    // Coba keluarkan (eject) satu popcorn jika belum mencapai batas 4 kali
     if (shakeCountRef.current < 4) {
-      // Hapus 1 popcorn dari dalam
-      const removed = insidePopcornsRef.current.pop();
-      if (removed) {
-        Matter.World.remove(engine.world, removed);
+      // Cari popcorn yang masih di dalam dan belum dilabel 'ejected'
+      const available = insidePopcornsRef.current.filter(b => b.position.y > 500 && b.label !== 'ejected');
+      if (available.length > 0) {
+        // Ambil yang posisinya paling atas
+        const p = available.reduce((prev, curr) => prev.position.y < curr.position.y ? prev : curr);
+        
+        // Lempar keras ke atas
+        Matter.Body.applyForce(p, p.position, {
+          x: (Math.random() - 0.5) * 0.02 * p.mass,
+          y: -0.15 * p.mass // dorongan vertikal kuat
+        });
+        p.label = 'ejected';
       }
-      
-      // Tambah popcorn jatuh (sebagai React state, bukan Matter body)
-      const currentCount = shakeCountRef.current;
-      setDroppedPopcorns(prev => [...prev, currentCount]);
-      shakeCountRef.current += 1;
     }
   }, []);
 
@@ -151,25 +154,73 @@ export default function HomeContent() {
     Matter.Render.run(render);
     Matter.Runner.run(runner, engine);
     
-    // --- Dinding tak terlihat berbentuk corong (V-shape tumpul) ---
-    const wallOpts = { isStatic: true, render: { visible: false } };
-    const t = 100; // ketebalan dinding ditingkatkan untuk mencegah tunneling (kebocoran)
+    // --- Efek Kedalaman Visual (Fake Depth Shadow) ---
+    Matter.Events.on(render, 'beforeRender', () => {
+      const ctx = render.context;
+      ctx.shadowColor = 'rgba(25, 10, 0, 0.6)';
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetX = 3;
+      ctx.shadowOffsetY = 6;
+    });
+
+    // Reset shadow setelah render agar tidak berantakan
+    Matter.Events.on(render, 'afterRender', () => {
+      const ctx = render.context;
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    });
+
+    // --- Transisi Jatuh yang Seamless ---
+    Matter.Events.on(engine, 'beforeUpdate', () => {
+      for (let i = insidePopcornsRef.current.length - 1; i >= 0; i--) {
+        const body = insidePopcornsRef.current[i];
+        // Jika popcorn sedang ditembakkan keluar dan sudah melewati area zipper (Y < 490)
+        if (body.label === 'ejected' && body.position.y < 490) {
+          Matter.World.remove(engine.world, body);
+          insidePopcornsRef.current.splice(i, 1);
+          
+          // Memicu animasi HTML drop di React State
+          const currentCount = shakeCountRef.current;
+          setDroppedPopcorns(prev => {
+            if (!prev.includes(currentCount)) return [...prev, currentCount];
+            return prev;
+          });
+          shakeCountRef.current += 1;
+        }
+      }
+    });
     
-    // Bagian atas lurus vertikal (Y: -200 s.d 300 di wrapper -> 200 s.d 700 di canvas)
-    // Diperpanjang ke atas (tinggi 900px) agar popcorn bebas terbang tinggi tanpa barrier
-    const vertH = 900;
-    const vertCY = 250;
-    const leftVert  = Matter.Bodies.rectangle(WALL_LEFT - t/2, vertCY, t, vertH, wallOpts);
-    const rightVert = Matter.Bodies.rectangle(WALL_RIGHT + t/2, vertCY, t, vertH, wallOpts);
+    // --- Dinding Poligonal yang Akurat (Mengikuti Kontur Plastik) ---
+    const createWallSegment = (x1: number, y1: number, x2: number, y2: number, thickness = 100) => {
+      const cx = (x1 + x2) / 2;
+      const cy = (y1 + y2) / 2;
+      const length = Math.hypot(x2 - x1, y2 - y1);
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      return Matter.Bodies.rectangle(cx, cy, length, thickness, {
+        isStatic: true,
+        angle: angle,
+        render: { visible: false },
+        friction: 0.8
+      });
+    };
+
+    const zipperY = 510;
+    const midY = 680;
+    const botY = 820;
     
-    // Bagian bawah miring membentuk corong masuk (Y: 300 s.d 420 di wrapper -> 700 s.d 820 di canvas)
-    const leftSlanted  = Matter.Bodies.rectangle(72, 760, t, 130, { ...wallOpts, angle: 0.322 });
-    const rightSlanted = Matter.Bodies.rectangle(328, 760, t, 130, { ...wallOpts, angle: -0.322 });
+    const lwTop = createWallSegment(115, -100, 115, zipperY);
+    const lw1 = createWallSegment(115, zipperY, 65, midY);
+    const lw2 = createWallSegment(65, midY, 60, botY);
     
-    // Lantai dasar datar menutup penuh lebar kemasan (lebar 400px, Y: 420 di wrapper -> 820 di canvas)
-    const bottomFloor  = Matter.Bodies.rectangle(200, 820 + t/2, WRAP_W, t, wallOpts);
+    const rwTop = createWallSegment(285, -100, 285, zipperY);
+    const rw1 = createWallSegment(285, zipperY, 335, midY);
+    const rw2 = createWallSegment(335, midY, 340, botY);
     
-    Matter.World.add(engine.world, [leftVert, rightVert, leftSlanted, rightSlanted, bottomFloor]);
+    const bottomFloor = createWallSegment(60, botY, 340, botY);
+    
+    Matter.World.add(engine.world, [lwTop, lw1, lw2, rwTop, rw1, rw2, bottomFloor]);
     
     // --- Spawn popcorn di dalam kantong ---
     const bagTopY = 50 + 80 + Y_OFFSET; // Y = 530 (leher zipper bag)
@@ -198,11 +249,12 @@ export default function HomeContent() {
         const s = r / 1000;
         
         const scaleVar = 0.9 + Math.random() * 0.2; // sedikit variasi random pada skala sprite
-        const body = Matter.Bodies.circle(px, py, r, {
-          restitution: 0.3, // pergerakan fisika lebih realistis
-          friction: 0.8,
-          density: 0.04,
-          angle: Math.random() * Math.PI * 2, // random initial angle
+        // Menggunakan poligon agar popcorn saling mengunci dan tidak menggelinding seperti kelereng
+        const body = Matter.Bodies.polygon(px, py, 7, r, {
+          restitution: 0.1, // pantulan lebih kecil agar organik
+          friction: 0.7,    // gesekan tinggi agar menumpuk
+          density: 0.002,   // massa sangat ringan
+          angle: Math.random() * Math.PI * 2,
           render: {
             sprite: {
               texture: '/popcorn.png?v=3',
