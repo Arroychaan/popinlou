@@ -15,16 +15,29 @@ export default function Header() {
 
   return (
     <header className="absolute top-0 left-0 w-full h-20 md:h-24 px-5 md:px-8 flex items-center justify-between z-50 bg-white/75 backdrop-blur-md border-b border-gray-100">
-      {/* Left: Logo */}
-      <div
-        className="cursor-pointer hover:opacity-70 transition-opacity flex items-center"
-        onClick={() => setActivePage("home")}
-      >
-        <img
-          src="/logo-popinlou.PNG"
-          alt="Popin Lou"
-          className="h-26 md:h-30 w-auto object-contain"
-        />
+      {/* Left: Back Button & Logo */}
+      <div className="flex items-center gap-1 md:gap-2">
+        {activePage !== "home" && (
+          <button
+            onClick={() => setActivePage("home")}
+            className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
+            aria-label="Kembali ke Beranda"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-700">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
+        )}
+        <div
+          className="cursor-pointer hover:opacity-70 transition-opacity flex items-center"
+          onClick={() => setActivePage("home")}
+        >
+          <img
+            src="/logo-popinlou.PNG"
+            alt="Popin Lou"
+            className="h-26 md:h-30 w-auto object-contain"
+          />
+        </div>
       </div>
 
       {/* Center: Title */}
