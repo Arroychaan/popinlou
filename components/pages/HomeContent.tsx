@@ -208,57 +208,58 @@ export default function HomeContent() {
     // Menyusun kontur dari atas ke bawah:
     // Bagian atas lurus -> Pinggang menyempit (pinch) -> Dasar melebar (flare)
     
-    // Kiri
-    const lTop = createWallSegment(98, -200, 98, 450, true);
-    const lMid = createWallSegment(98, 450, 108, 650, true);
-    const lBot = createWallSegment(108, 650, 78, 820, true);
+    // Kiri: dari Y=430 (canvas) = Y=30 (wrapper, tepat bawah zipper) ke bawah
+    const lTop = createWallSegment(100, 430, 100, 580, true);
+    const lMid = createWallSegment(100, 580, 108, 690, true);
+    const lBot = createWallSegment(108, 690, 75, 830, true);
     
     // Kanan
-    const rTop = createWallSegment(302, -200, 302, 450, false);
-    const rMid = createWallSegment(302, 450, 292, 650, false);
-    const rBot = createWallSegment(292, 650, 322, 820, false);
+    const rTop = createWallSegment(300, 430, 300, 580, false);
+    const rMid = createWallSegment(300, 580, 292, 690, false);
+    const rBot = createWallSegment(292, 690, 325, 830, false);
     
     // Dasar
-    const bottomFloor = Matter.Bodies.rectangle(200, 820 + 50, 400, 100, { 
+    const bottomFloor = Matter.Bodies.rectangle(200, 880, 400, 100, { 
       isStatic: true, render: { visible: false }, friction: 0.8 
     });
     
-    Matter.World.add(engine.world, [lTop, lMid, lBot, rTop, rMid, rBot, bottomFloor]);
+    // Atap (mencegah popcorn keluar lewat atas canvas saat di-spawn)
+    const ceiling = Matter.Bodies.rectangle(200, 420, 400, 20, {
+      isStatic: true, render: { visible: false }
+    });
+    
+    Matter.World.add(engine.world, [lTop, lMid, lBot, rTop, rMid, rBot, bottomFloor, ceiling]);
     
     // --- Spawn popcorn di dalam kantong ---
-    const bagTopY = 50 + 80 + Y_OFFSET; // Y = 530 (leher zipper bag)
-    const wallBottom = 50 + 370 + Y_OFFSET; // Y = 820 (segel bawah bag)
-    const margin = 15;
-    const spawnLeft   = 110;
-    const spawnRight  = 290;
-    const spawnTop    = bagTopY + 20;
-    const spawnBottom = wallBottom - 20;
+    // Canvas Y=400 => Wrapper Y=0. Bag interior dimulai dari canvas Y≈450 (wrapper Y≈50)
+    // Bag bottom di canvas Y≈830 (wrapper Y≈430)
+    const spawnTop    = 455;  // canvas Y, tepat di bawah zipper
+    const spawnBottom = 820;  // canvas Y, tepat di atas segel bawah
+    const spawnLeft   = 115;
+    const spawnRight  = 285;
     
     const cols = 8;
-    const rows = 11;
+    const rows = 14;  // lebih banyak baris agar memenuhi seluruh tinggi kantong
+    const maxPopcorn = cols * rows; // 112 popcorn
     const bodies: Matter.Body[] = [];
     
     let count = 0;
-    for (let r_idx = 0; r_idx < rows && count < 85; r_idx++) {
-      for (let c_idx = 0; c_idx < cols && count < 85; c_idx++) {
+    for (let r_idx = 0; r_idx < rows && count < maxPopcorn; r_idx++) {
+      for (let c_idx = 0; c_idx < cols && count < maxPopcorn; c_idx++) {
         const x_pct = (c_idx + 0.5) / cols;
         const y_pct = (r_idx + 0.5) / rows;
         
-        const px = spawnLeft + x_pct * (spawnRight - spawnLeft) + (Math.random() - 0.5) * 10;
-        const py = spawnTop + y_pct * (spawnBottom - spawnTop) + (Math.random() - 0.5) * 10;
+        const px = spawnLeft + x_pct * (spawnRight - spawnLeft) + (Math.random() - 0.5) * 8;
+        const py = spawnTop  + y_pct * (spawnBottom - spawnTop)  + (Math.random() - 0.5) * 8;
         
-        // --- RAHASIA ILUSI 3D ---
-        // Gambar visualnya diperbesar, tapi radius fisikanya dikecilkan.
-        // Ini memungkinkan popcorn tumpang-tindih (overlap) secara visual, 
-        // sehingga terlihat seperti berlapis-lapis di dalam dimensi Z.
-        const visualR = 15 + Math.random() * 4; // Ukuran gambar (15 s.d 19)
-        const physicsR = visualR * 0.75; // Hitbox fisika lebih kecil 25%
-        
+        // Ilusi 3D: sprite lebih besar dari hitbox agar terlihat tumpang-tindih
+        const visualR = 14 + Math.random() * 5; // sprite radius 14-19px
+        const physicsR = visualR * 0.72;         // hitbox 28% lebih kecil
         const s = visualR / 1000;
         
         const body = Matter.Bodies.polygon(px, py, 7, physicsR, {
-          restitution: 0.1, // pantulan sangat kecil agar organik
-          friction: 0.85,   // gesekan tinggi agar menumpuk dan saling kunci
+          restitution: 0.05,
+          friction: 0.9,
           density: 0.002,
           angle: Math.random() * Math.PI * 2,
           render: {
@@ -328,23 +329,23 @@ export default function HomeContent() {
               filter: 'drop-shadow(0px 6px 8px rgba(0, 0, 0, 0.25))'
             }}
           />
-          {/* z-[25]: Stiker logo di atas canvas popcorn, di bawah plastik depan */}
+          {/* z-[90]: Stiker logo DI ATAS plastik depan — tampil sebagai stiker di permukaan kemasan */}
           <div
             ref={logoRef}
             className="absolute pointer-events-none"
             style={{
-              zIndex: 25,
-              width: '84px',
-              height: '84px',
-              left: '158px',
-              top: '279.6px'
+              zIndex: 90,
+              width: '90px',
+              height: '90px',
+              left: '155px',
+              top: '275px'
             }}
           >
             <img
-              src="/logo-circle.png?v=2"
+              src="/logo-circle.png?v=3"
               alt="Logo Popin Lou"
               draggable={false}
-              className="block w-full h-full object-contain"
+              className="block w-full h-full object-contain drop-shadow-md"
             />
           </div>
           {/* z-[70]: Plastik depan dengan mix-blend-mode: screen */}
