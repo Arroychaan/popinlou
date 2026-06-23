@@ -211,8 +211,8 @@ export default function HomeContent() {
     const spawnTop    = 500; // canvas Y, tepat bawah zipper (wrapper Y=100)
     const spawnBottom = 800; // canvas Y, tepat atas segel bawah (wrapper Y=400)
 
-    const cols = 7;
-    const rows = 12;
+    const cols = 8;
+    const rows = 14;
     const bodies: Matter.Body[] = [];
     let count = 0;
     
@@ -223,7 +223,7 @@ export default function HomeContent() {
         const py = spawnTop   + ((r + 0.5) / rows) * (spawnBottom - spawnTop)   + (Math.random() - 0.5) * 10;
         
         // Sprite lebih besar dari hitbox → ilusi tumpang-tindih / kedalaman 3D
-        const visualR  = 13 + Math.random() * 5; // 13–18px
+        const visualR  = 14 + Math.random() * 5; // 14–19px
         const physicsR = visualR * 0.65;          // hitbox 35% lebih kecil dari sprite
         const s = visualR / 1000;
         
@@ -299,16 +299,26 @@ export default function HomeContent() {
               filter: 'drop-shadow(0px 6px 8px rgba(0, 0, 0, 0.25))'
             }}
           />
-          {/* z-[90]: Stiker logo DI ATAS plastik depan — tampil sebagai stiker di permukaan kemasan */}
+
+          {/* z-[70]: Plastik depan dengan mix-blend-mode: multiply */}
+          <img
+            ref={fgRef}
+            src="/plastik-depan.png?v=3"
+            alt=""
+            draggable={false}
+            className="pointer-events-none absolute inset-0 z-[70] w-full h-full object-contain"
+            style={{ mixBlendMode: 'multiply', top: '-5.2px' }}
+          />
+          {/* z-[90]: Logo bersih DI ATAS plastik depan — menutupi stiker blended */}
           <div
             ref={logoRef}
             className="absolute pointer-events-none"
             style={{
               zIndex: 90,
-              width: '90px',
-              height: '90px',
-              left: '155px',
-              top: '275px'
+              width: '110px',
+              height: '110px',
+              left: '145px',
+              top: '265px'
             }}
           >
             <img
@@ -318,15 +328,6 @@ export default function HomeContent() {
               className="block w-full h-full object-contain drop-shadow-md"
             />
           </div>
-          {/* z-[70]: Plastik depan dengan mix-blend-mode: screen */}
-          <img
-            ref={fgRef}
-            src="/plastik-depan.png?v=3"
-            alt=""
-            draggable={false}
-            className="mix-blend-mode-screen pointer-events-none absolute inset-0 z-[70] w-full h-full object-contain"
-            style={{ mixBlendMode: 'screen', top: '-5.2px' }}
-          />
           {/* z-40: Area klik untuk shake */}
           <div
             onClick={handleShake}
