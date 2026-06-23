@@ -234,7 +234,7 @@ export default function HomeContent() {
           angle: Math.random() * Math.PI * 2,
           render: {
             sprite: {
-              texture: '/popcorn.png?v=3',
+              texture: '/popcorn.png?v=4',
               xScale: s,
               yScale: s
             }
@@ -283,7 +283,7 @@ export default function HomeContent() {
           {/* z-10: Plastik belakang */}
           <img
             ref={bgRef}
-            src="/plastik-belakang.png?v=3"
+            src="/plastik-belakang.png?v=4"
             alt=""
             draggable={false}
             className="absolute inset-0 w-full h-full object-contain z-10 pointer-events-none"
@@ -303,7 +303,7 @@ export default function HomeContent() {
           {/* z-[70]: Plastik depan dengan mix-blend-mode: multiply */}
           <img
             ref={fgRef}
-            src="/plastik-depan.png?v=3"
+            src="/plastik-depan.png?v=4"
             alt=""
             draggable={false}
             className="pointer-events-none absolute inset-0 z-[70] w-full h-full object-contain"
@@ -322,7 +322,7 @@ export default function HomeContent() {
             }}
           >
             <img
-              src="/logo-circle.png?v=3"
+              src="/logo-circle.png?v=4"
               alt="Logo Popin Lou"
               draggable={false}
               className="block w-full h-full object-contain drop-shadow-md"
@@ -496,7 +496,7 @@ function DroppedPopcorn({
           className="absolute left-1/2 top-[88%] h-2.5 w-10 -translate-x-1/2 rounded-full bg-black/20 blur-[3px]"
         />
         <img 
-          src="/popcorn.png?v=3" 
+          src="/popcorn.png?v=4" 
           alt={label}
           draggable={false}
           className="relative w-full h-full object-contain drop-shadow-[0_10px_12px_rgba(0,0,0,0.22)] hover:drop-shadow-[0_14px_16px_rgba(0,0,0,0.26)] transition-all"
