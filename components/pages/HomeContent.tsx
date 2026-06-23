@@ -192,36 +192,69 @@ export default function HomeContent() {
       }
     });
     
-    // --- Dinding Lurus dan Lebar (Memaksimalkan Ruang Plastik) ---
-    const wallOpts = { isStatic: true, render: { visible: false }, friction: 0.8 };
-    const t = 100; // Ketebalan
+    // --- Dinding Poligonal yang Akurat (Mengikuti Kontur Plastik) ---
+    const createWallSegment = (x1: number, y1: number, x2: number, y2: number, isLeftWall: boolean) => {
+      const thickness = 100;
+      let cx = (x1 + x2) / 2;
+      let cy = (y1 + y2) / 2;
+      const length = Math.hypot(x2 - x1, y2 - y1);
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      
+      // Mencari vektor normal untuk menggeser hitbox ke "luar" garis visual
+      const dx = x2 - x1;
+      const dy = y2 - y1;
+      const len = Math.hypot(dx, dy);
+      const nx = -dy / len; // menunjuk ke kiri
+      const ny = dx / len;
+      
+      const shiftDir = isLeftWall ? 1 : -1;
+      cx += nx * (thickness / 2) * shiftDir;
+      cy += ny * (thickness / 2) * shiftDir;
+
+      return Matter.Bodies.rectangle(cx, cy, length + 20 /* overlap to prevent gaps */, thickness, {
+        isStatic: true,
+        angle: angle,
+        render: { visible: false },
+        friction: 0.8
+      });
+    };
+
+    // Menyusun kontur dari atas ke bawah:
+    // Bagian atas lurus -> Pinggang menyempit (pinch) -> Dasar melebar (flare)
     
-    // Kami menggunakan batas X: 80 dan 320 untuk menyesuaikan rongga plastik
-    // Dikurangi t/2 agar batas dinding sejajar dengan piksel X yang diinginkan (tidak memakan ruang ke dalam)
-    const leftWall = Matter.Bodies.rectangle(80 - t/2, 450, t, 1200, wallOpts);
-    const rightWall = Matter.Bodies.rectangle(320 + t/2, 450, t, 1200, wallOpts);
+    // Kiri
+    const lTop = createWallSegment(98, -200, 98, 450, true);
+    const lMid = createWallSegment(98, 450, 108, 650, true);
+    const lBot = createWallSegment(108, 650, 78, 820, true);
+    
+    // Kanan
+    const rTop = createWallSegment(302, -200, 302, 450, false);
+    const rMid = createWallSegment(302, 450, 292, 650, false);
+    const rBot = createWallSegment(292, 650, 322, 820, false);
     
     // Dasar
-    const bottomFloor = Matter.Bodies.rectangle(200, 830 + t/2, 400, t, wallOpts);
+    const bottomFloor = Matter.Bodies.rectangle(200, 820 + 50, 400, 100, { 
+      isStatic: true, render: { visible: false }, friction: 0.8 
+    });
     
-    Matter.World.add(engine.world, [leftWall, rightWall, bottomFloor]);
+    Matter.World.add(engine.world, [lTop, lMid, lBot, rTop, rMid, rBot, bottomFloor]);
     
     // --- Spawn popcorn di dalam kantong ---
     const bagTopY = 50 + 80 + Y_OFFSET; // Y = 530 (leher zipper bag)
     const wallBottom = 50 + 370 + Y_OFFSET; // Y = 820 (segel bawah bag)
     const margin = 15;
-    const spawnLeft   = 90;
-    const spawnRight  = 310;
+    const spawnLeft   = 110;
+    const spawnRight  = 290;
     const spawnTop    = bagTopY + 20;
     const spawnBottom = wallBottom - 20;
     
     const cols = 8;
-    const rows = 12;
+    const rows = 11;
     const bodies: Matter.Body[] = [];
     
     let count = 0;
-    for (let r_idx = 0; r_idx < rows && count < 95; r_idx++) {
-      for (let c_idx = 0; c_idx < cols && count < 95; c_idx++) {
+    for (let r_idx = 0; r_idx < rows && count < 85; r_idx++) {
+      for (let c_idx = 0; c_idx < cols && count < 85; c_idx++) {
         const x_pct = (c_idx + 0.5) / cols;
         const y_pct = (r_idx + 0.5) / rows;
         
