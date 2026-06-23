@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
+import { motion, AnimatePresence } from 'framer-motion';
 import Matter from 'matter-js';
 import gsap from 'gsap';
 
@@ -299,6 +300,44 @@ export default function HomeContent() {
           />
         </div>
       </div>
+
+      {/* Animated Text Container */}
+      <AnimatePresence>
+        {droppedPopcorns.length < 4 && (
+          <motion.div 
+            className="absolute top-[8%] sm:top-[12%] left-0 w-full z-[60] pointer-events-none flex flex-col items-center text-center px-4"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20, filter: 'blur(5px)' }}
+            transition={{ delay: 0.5, duration: 0.8 }}
+          >
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <motion.div
+                animate={{ rotate: [-15, 15, -15] }}
+                transition={{ repeat: Infinity, duration: 1.2, ease: "easeInOut" }}
+                className="text-4xl sm:text-5xl"
+                style={{ originY: 0.8 }}
+              >
+                👋
+              </motion.div>
+              <motion.h2 
+                className="text-3xl sm:text-4xl md:text-5xl font-black text-amber-500 drop-shadow-md tracking-wider uppercase"
+                animate={{ scale: [1, 1.05, 1] }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              >
+                TAP TO SHAKE!
+              </motion.h2>
+            </div>
+            <motion.p 
+              className="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-widest bg-white/50 px-4 py-1.5 rounded-full backdrop-blur-sm shadow-sm"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            >
+              Tap kemasan untuk mengeluarkan popcorn
+            </motion.p>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* z-[80]: Popcorn yang jatuh (posisi relatif terhadap viewport, tapi aman dari clipping) */}
       <div className="absolute left-0 w-full flex flex-wrap justify-center gap-x-6 sm:gap-x-12 md:gap-x-16 z-[80]" style={{ bottom: 'clamp(2rem, 5dvh, 6rem)' }}>
