@@ -157,10 +157,10 @@ export default function HomeContent() {
     // --- Efek Kedalaman Visual (Fake Depth Shadow) ---
     Matter.Events.on(render, 'beforeRender', () => {
       const ctx = render.context;
-      ctx.shadowColor = 'rgba(25, 10, 0, 0.6)';
-      ctx.shadowBlur = 12;
-      ctx.shadowOffsetX = 3;
-      ctx.shadowOffsetY = 6;
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 3;
     });
 
     // Reset shadow setelah render agar tidak berantakan
@@ -192,74 +192,61 @@ export default function HomeContent() {
       }
     });
     
-    // --- Dinding Poligonal yang Akurat (Mengikuti Kontur Plastik) ---
-    const createWallSegment = (x1: number, y1: number, x2: number, y2: number, thickness = 100) => {
-      const cx = (x1 + x2) / 2;
-      const cy = (y1 + y2) / 2;
-      const length = Math.hypot(x2 - x1, y2 - y1);
-      const angle = Math.atan2(y2 - y1, x2 - x1);
-      return Matter.Bodies.rectangle(cx, cy, length, thickness, {
-        isStatic: true,
-        angle: angle,
-        render: { visible: false },
-        friction: 0.8
-      });
-    };
-
-    const zipperY = 510;
-    const midY = 680;
-    const botY = 820;
+    // --- Dinding Lurus dan Lebar (Memaksimalkan Ruang Plastik) ---
+    const wallOpts = { isStatic: true, render: { visible: false }, friction: 0.8 };
+    const t = 100; // Ketebalan
     
-    const lwTop = createWallSegment(115, -100, 115, zipperY);
-    const lw1 = createWallSegment(115, zipperY, 65, midY);
-    const lw2 = createWallSegment(65, midY, 60, botY);
+    // Kami menggunakan batas X: 80 dan 320 untuk menyesuaikan rongga plastik
+    // Dikurangi t/2 agar batas dinding sejajar dengan piksel X yang diinginkan (tidak memakan ruang ke dalam)
+    const leftWall = Matter.Bodies.rectangle(80 - t/2, 450, t, 1200, wallOpts);
+    const rightWall = Matter.Bodies.rectangle(320 + t/2, 450, t, 1200, wallOpts);
     
-    const rwTop = createWallSegment(285, -100, 285, zipperY);
-    const rw1 = createWallSegment(285, zipperY, 335, midY);
-    const rw2 = createWallSegment(335, midY, 340, botY);
+    // Dasar
+    const bottomFloor = Matter.Bodies.rectangle(200, 830 + t/2, 400, t, wallOpts);
     
-    const bottomFloor = createWallSegment(60, botY, 340, botY);
-    
-    Matter.World.add(engine.world, [lwTop, lw1, lw2, rwTop, rw1, rw2, bottomFloor]);
+    Matter.World.add(engine.world, [leftWall, rightWall, bottomFloor]);
     
     // --- Spawn popcorn di dalam kantong ---
     const bagTopY = 50 + 80 + Y_OFFSET; // Y = 530 (leher zipper bag)
     const wallBottom = 50 + 370 + Y_OFFSET; // Y = 820 (segel bawah bag)
     const margin = 15;
-    const spawnLeft   = WALL_LEFT + margin;
-    const spawnRight  = WALL_RIGHT - margin;
-    const spawnTop    = bagTopY + margin;
-    const spawnBottom = wallBottom - margin;
+    const spawnLeft   = 90;
+    const spawnRight  = 310;
+    const spawnTop    = bagTopY + 20;
+    const spawnBottom = wallBottom - 20;
     
-    const cols = 7;
-    const rows = 11;
+    const cols = 8;
+    const rows = 12;
     const bodies: Matter.Body[] = [];
     
     let count = 0;
-    for (let r_idx = 0; r_idx < rows && count < 75; r_idx++) {
-      for (let c_idx = 0; c_idx < cols && count < 75; c_idx++) {
+    for (let r_idx = 0; r_idx < rows && count < 95; r_idx++) {
+      for (let c_idx = 0; c_idx < cols && count < 95; c_idx++) {
         const x_pct = (c_idx + 0.5) / cols;
         const y_pct = (r_idx + 0.5) / rows;
         
-        const px = spawnLeft + x_pct * (spawnRight - spawnLeft) + (Math.random() - 0.5) * 8;
-        const py = spawnTop + y_pct * (spawnBottom - spawnTop) + (Math.random() - 0.5) * 8;
+        const px = spawnLeft + x_pct * (spawnRight - spawnLeft) + (Math.random() - 0.5) * 10;
+        const py = spawnTop + y_pct * (spawnBottom - spawnTop) + (Math.random() - 0.5) * 10;
         
-        // Random diameter antara 22px dan 28px (radius 11 s.d 14)
-        const r = 11 + Math.random() * 3;
-        const s = r / 1000;
+        // --- RAHASIA ILUSI 3D ---
+        // Gambar visualnya diperbesar, tapi radius fisikanya dikecilkan.
+        // Ini memungkinkan popcorn tumpang-tindih (overlap) secara visual, 
+        // sehingga terlihat seperti berlapis-lapis di dalam dimensi Z.
+        const visualR = 15 + Math.random() * 4; // Ukuran gambar (15 s.d 19)
+        const physicsR = visualR * 0.75; // Hitbox fisika lebih kecil 25%
         
-        const scaleVar = 0.9 + Math.random() * 0.2; // sedikit variasi random pada skala sprite
-        // Menggunakan poligon agar popcorn saling mengunci dan tidak menggelinding seperti kelereng
-        const body = Matter.Bodies.polygon(px, py, 7, r, {
-          restitution: 0.1, // pantulan lebih kecil agar organik
-          friction: 0.7,    // gesekan tinggi agar menumpuk
-          density: 0.002,   // massa sangat ringan
+        const s = visualR / 1000;
+        
+        const body = Matter.Bodies.polygon(px, py, 7, physicsR, {
+          restitution: 0.1, // pantulan sangat kecil agar organik
+          friction: 0.85,   // gesekan tinggi agar menumpuk dan saling kunci
+          density: 0.002,
           angle: Math.random() * Math.PI * 2,
           render: {
             sprite: {
               texture: '/popcorn.png?v=3',
-              xScale: s * scaleVar,
-              yScale: s * scaleVar
+              xScale: s,
+              yScale: s
             }
           }
         });
