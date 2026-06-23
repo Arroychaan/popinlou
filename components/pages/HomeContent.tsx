@@ -232,7 +232,7 @@ export default function HomeContent() {
   }, [setActivePage]);
 
   return (
-    <div className="relative w-full h-[100dvh] flex flex-col items-center justify-center bg-white overflow-hidden select-none home-container pt-8 md:pt-12">
+    <div className="relative w-full h-[100dvh] flex flex-col items-center justify-center bg-white overflow-hidden select-none home-container pt-20 md:pt-24 pb-16">
       {/* Container responsif yang menyesuaikan ukuran layout tanpa merusak koordinat */}
       <div 
         className="relative flex justify-center items-center" 
@@ -309,7 +309,7 @@ export default function HomeContent() {
       <AnimatePresence>
         {droppedPopcorns.length < 4 && (
           <motion.div 
-            className="absolute top-[8%] sm:top-[12%] left-0 w-full z-[60] pointer-events-none flex flex-col items-center text-center px-4"
+            className="absolute top-24 md:top-32 left-0 w-full z-[60] pointer-events-none flex flex-col items-center text-center px-2"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20, filter: 'blur(5px)' }}
@@ -344,7 +344,7 @@ export default function HomeContent() {
       </AnimatePresence>
 
       {/* z-[80]: Popcorn yang jatuh (posisi relatif terhadap viewport, tapi aman dari clipping) */}
-      <div className="absolute left-0 w-full flex flex-wrap justify-center gap-x-6 sm:gap-x-12 md:gap-x-16 z-[80]" style={{ bottom: 'clamp(2rem, 5dvh, 6rem)' }}>
+      <div className="absolute left-0 w-full flex justify-center gap-x-2 sm:gap-x-8 md:gap-x-12 z-[80]" style={{ bottom: 'clamp(1rem, 3dvh, 4rem)' }}>
         {droppedPopcorns.map((index) => (
           <DroppedPopcorn
             key={index}
@@ -451,14 +451,14 @@ function DroppedPopcorn({
   return (
     <div 
       ref={ref}
-      className="flex w-16 flex-col items-center select-none sm:w-20"
+      className="flex w-[60px] sm:w-16 md:w-20 flex-col items-center select-none"
       style={{ marginTop: landing.y }}
     >
       {/* Gambar popcorn */}
       <div 
         onClick={(e) => { e.stopPropagation(); onClick(); }}
-        className="popcorn-img-container relative cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200"
-        style={{ width: 50, height: 50, rotate: `${landing.rotate}deg` }}
+        className="popcorn-img-container relative cursor-pointer hover:scale-110 active:scale-95 transition-transform duration-200 w-11 h-11 sm:w-12 sm:h-12 md:w-[50px] md:h-[50px]"
+        style={{ rotate: `${landing.rotate}deg` }}
       >
         <span
           aria-hidden
@@ -474,7 +474,7 @@ function DroppedPopcorn({
       
       {/* Label Halaman */}
       <span 
-        className="label-text text-xs font-bold text-gray-800 mt-2 tracking-widest uppercase select-none pointer-events-none"
+        className="label-text text-[10px] sm:text-xs font-bold text-gray-800 mt-2 tracking-wider uppercase select-none pointer-events-none text-center leading-tight"
         style={{ opacity: 0 }}
       >
         {label}

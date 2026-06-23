@@ -35,13 +35,13 @@ export default function Header() {
           <img
             src="/logo-popinlou.PNG"
             alt="Popin Lou"
-            className="h-26 md:h-30 w-auto object-contain"
+            className="h-10 md:h-14 w-auto object-contain"
           />
         </div>
       </div>
 
-      {/* Center: Title */}
-      <div className="absolute left-1/2 -translate-x-1/2 text-base md:text-lg font-medium text-gray-800">
+      {/* Center: Title (Hidden on mobile to prevent overlap) */}
+      <div className="hidden md:block absolute left-1/2 -translate-x-1/2 text-lg font-medium text-gray-800">
         {titles[activePage]}
       </div>
 
@@ -50,7 +50,7 @@ export default function Header() {
 
         <button
           onClick={() => setOrderPopupOpen(true)}
-          className="bg-black text-white px-4 md:px-5 py-2 rounded-full text-xs md:text-sm font-medium hover:bg-gray-800 transition-colors active:scale-95"
+          className="bg-black text-white px-3 md:px-5 py-2 rounded-full text-[11px] md:text-sm font-medium hover:bg-gray-800 transition-colors active:scale-95 whitespace-nowrap"
         >
           Order Sekarang
         </button>
