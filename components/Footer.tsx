@@ -18,7 +18,7 @@ const socialLinks = [
   },
   {
     label: "Instagram PopinLou",
-    href: "https://www.instagram.com/popin.lou",
+    href: "https://www.instagram.com/p/DZsRQ9QE430/",
     logo: "/Instagram-logo.png",
   },
 ];
