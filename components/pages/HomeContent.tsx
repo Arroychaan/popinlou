@@ -328,20 +328,21 @@ export default function HomeContent() {
               filter: 'drop-shadow(0px 6px 8px rgba(0, 0, 0, 0.25))'
             }}
           />
-          {/* z-[80]: Stiker logo solid di depan */}
+          {/* z-[25]: Stiker logo di atas canvas popcorn, di bawah plastik depan */}
           <div
             ref={logoRef}
-            className="absolute z-[80] pointer-events-none drop-shadow-sm"
+            className="absolute pointer-events-none"
             style={{
-              width: '84px', // Sedikit diperbesar agar pas
+              zIndex: 25,
+              width: '84px',
               height: '84px',
-              left: '158px', // Disesuaikan dengan perbesaran
+              left: '158px',
               top: '279.6px'
             }}
           >
             <img
-              src="/logo-circle.png"
-              alt="Logo"
+              src="/logo-circle.png?v=2"
+              alt="Logo Popin Lou"
               draggable={false}
               className="block w-full h-full object-contain"
             />

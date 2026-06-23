@@ -73,7 +73,7 @@ export default function PopUpOrder() {
             </button>
 
             <h3 className="text-xl font-semibold mb-3 pr-8 text-gray-900 leading-snug">
-              Pesan PopinLou lewat channel resmi
+              Pesan PopinLou lewat Kanal Resmi
             </h3>
             <p className="text-sm text-gray-500 mb-5 leading-relaxed">
               Pilih WhatsApp untuk order cepat, Shopee untuk checkout
