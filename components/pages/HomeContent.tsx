@@ -34,7 +34,7 @@ export default function HomeContent() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bgRef = useRef<HTMLImageElement>(null);
   const fgRef = useRef<HTMLImageElement>(null);
-  const logoRef = useRef<HTMLImageElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
   
   const engineRef = useRef<Matter.Engine | null>(null);
   const runnerRef = useRef<Matter.Runner | null>(null);
@@ -270,20 +270,24 @@ export default function HomeContent() {
               filter: 'drop-shadow(0px 6px 8px rgba(0, 0, 0, 0.25))'
             }}
           />
-          {/* z-[80]: Logo lingkaran di depan */}
-          <img
+          {/* z-[80]: Stiker logo solid di depan */}
+          <div
             ref={logoRef}
-            src="/logo-circle.png"
-            alt=""
-            draggable={false}
-            className="absolute z-[80] pointer-events-none"
+            className="absolute z-[80] pointer-events-none rounded-full overflow-hidden bg-[#fde0b8] shadow-[0_2px_8px_rgba(92,45,12,0.18)]"
             style={{
               width: '76px',
               height: '76px',
               left: '162px',
               top: '283.6px'
             }}
-          />
+          >
+            <img
+              src="/logo-circle.png"
+              alt=""
+              draggable={false}
+              className="block w-full h-full object-contain"
+            />
+          </div>
           {/* z-[70]: Plastik depan dengan mix-blend-mode: screen */}
           <img
             ref={fgRef}

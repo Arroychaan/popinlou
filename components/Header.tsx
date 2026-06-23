@@ -34,14 +34,7 @@ export default function Header() {
 
       {/* Right: Buttons */}
       <div className="flex items-center gap-3 md:gap-4">
-        {activePage === "home" && (
-          <button
-            onClick={() => setActivePage("faq")}
-            className="text-sm font-medium text-gray-600 hover:text-black transition-colors"
-          >
-            Help
-          </button>
-        )}
+
         <button
           onClick={() => setOrderPopupOpen(true)}
           className="bg-black text-white px-4 md:px-5 py-2 rounded-full text-xs md:text-sm font-medium hover:bg-gray-800 transition-colors active:scale-95"
