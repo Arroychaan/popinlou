@@ -155,22 +155,8 @@ export default function HomeContent() {
     Matter.Runner.run(runner, engine);
     
     // --- Efek Kedalaman Visual (Fake Depth Shadow) ---
-    Matter.Events.on(render, 'beforeRender', () => {
-      const ctx = render.context;
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-      ctx.shadowBlur = 8;
-      ctx.shadowOffsetX = 1;
-      ctx.shadowOffsetY = 3;
-    });
-
-    // Reset shadow setelah render agar tidak berantakan
-    Matter.Events.on(render, 'afterRender', () => {
-      const ctx = render.context;
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-    });
+    // Dihapus karena akumulasi shadow saat popcorn tumpang tindih 
+    // membuat warna popcorn menjadi sangat gelap dan kotor.
 
     // --- Transisi Jatuh yang Seamless ---
     Matter.Events.on(engine, 'beforeUpdate', () => {
@@ -345,17 +331,17 @@ export default function HomeContent() {
           {/* z-[80]: Stiker logo solid di depan */}
           <div
             ref={logoRef}
-            className="absolute z-[80] pointer-events-none rounded-full overflow-hidden bg-[#fde0b8] shadow-[0_2px_8px_rgba(92,45,12,0.18)]"
+            className="absolute z-[80] pointer-events-none drop-shadow-sm"
             style={{
-              width: '76px',
-              height: '76px',
-              left: '162px',
-              top: '283.6px'
+              width: '84px', // Sedikit diperbesar agar pas
+              height: '84px',
+              left: '158px', // Disesuaikan dengan perbesaran
+              top: '279.6px'
             }}
           >
             <img
               src="/logo-circle.png"
-              alt=""
+              alt="Logo"
               draggable={false}
               className="block w-full h-full object-contain"
             />
