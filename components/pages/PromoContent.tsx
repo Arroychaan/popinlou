@@ -16,30 +16,30 @@ const promoPackages: PromoPackage[] = [
     title: "PopinLou Nonton",
     desc: "Dua kemasan 100gr untuk teman nonton, ngobrol santai, atau sharing berdua tanpa rebutan.",
     badge: "100gr x2",
-    price: "Rp44.000",
+    price: "Rp31.000",
     image: "/PaketNonton.PNG",
   },
   {
     title: "PopinLou Favorit",
     desc: "Kombinasi favorit 100gr dan 250gr untuk camilan harian yang lebih puas dan tetap hemat.",
     badge: "100gr + 250gr",
-    price: "Rp64.000",
+    price: "Rp34.000",
     image: "/PaketFavorit.PNG",
   },
   {
     title: "PopinLou Keluarga",
     desc: "Paket 100gr dan 500gr untuk dinikmati bersama keluarga saat nonton, kumpul, dan quality time.",
     badge: "100gr + 500gr",
-    price: "Rp84.000",
+    price: "Rp65.000",
     image: "/paketkeluarga.PNG",
   },
   {
     title: "PopinLou Sultan",
     desc: "Paket 250gr dan 500gr dengan porsi melimpah untuk acara besar atau stok lebih lama.",
     badge: "250gr + 500gr",
-    price: "Rp104.000",
+    price: "Rp81.000",
     image: "/paketsultan.PNG",
-  }
+  },
 ];
 
 const containerVariants: Variants = {
